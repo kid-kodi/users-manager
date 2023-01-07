@@ -1,0 +1,9 @@
+export { default as WelcomePage } from "./main/WelcomePage";
+export { default as LoginPage } from "./auth/LoginPage";
+export { default as RegisterPage } from "./auth/RegisterPage";
+export { default as ForgotPasswordPage } from "./auth/ForgotPasswordPage";
+export { default as ResetPasswordPage } from "./auth/ResetPasswordPage";
+export { default as DashboardPage } from "./main/DashboardPage";
+export { default as UserListPage } from "./users/UserListPage";
+export { default as UserEditPage } from "./users/UserEditPage";
+export { default as UserProfilePage } from "./users/UserProfilePage";
