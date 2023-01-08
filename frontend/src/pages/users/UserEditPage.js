@@ -66,48 +66,80 @@ export default function UserEditPage() {
   }, [userId]);
 
   return (
-    <div>
-      <h1>Creer utilisateur</h1>
-      <div>
-        <form onSubmit={handleSubmit}>
-          <input
-            name="firstName"
-            value={user.firstName}
-            type="text"
-            onChange={handleChange}
-            placeholder="Nom"
-          />
-          <input
-            name="lastName"
-            value={user.lastName}
-            type="text"
-            onChange={handleChange}
-            placeholder="Prenom"
-          />
-          <input
-            name="email"
-            value={user.email}
-            type="email"
-            onChange={handleChange}
-            placeholder="Email adresse"
-          />
-          <input
-            name="telephone"
-            value={user.telephone}
-            type="text"
-            onChange={handleChange}
-            placeholder="Telephone"
-          />
-          <input
-            name="password"
-            value={user.password}
-            type="password"
-            onChange={handleChange}
-            placeholder="Password"
-          />
-          <button type="submit">ADD</button>
-          <Link to="/users">Retour</Link>
-        </form>
+    <div className="flex flex-col">
+      <div className="p-[2rem] flex items-center justify-between gap-[0.5] pt-[1rem] pb-[1rem]">
+        <h1 className="text-2xl font-extrabold text-blue-500">
+          FORMULAIRE D'ENREGISTREMENT D'UN UTILISATEUR
+        </h1>
+      </div>
+      <div className="pt-[1rem] p-[2rem]">
+        <div className="bg-white flex-1 overflow-auto p-5">
+          <form
+            className="flex max-w-[40rem] flex-col gap-[1rem]"
+            onSubmit={handleSubmit}
+          >
+            <label className="flex">
+              <span className="w-[8rem]">Nom</span>
+              <input
+                className="inputText mr-1"
+                name="firstName"
+                value={user.firstName}
+                type="text"
+                onChange={handleChange}
+                placeholder="Nom"
+              />
+              <input
+                className="inputText"
+                name="lastName"
+                value={user.lastName}
+                type="text"
+                onChange={handleChange}
+                placeholder="Prenom"
+              />
+            </label>
+            <label className="flex">
+              <span className="w-[8rem]">Email adresse</span>
+              <input
+                className="inputText"
+                name="email"
+                value={user.email}
+                type="email"
+                onChange={handleChange}
+                placeholder="Email adresse"
+              />
+            </label>
+            <label className="flex">
+              <span className="w-[8rem]">Telephone</span>
+              <input
+                className="inputText"
+                name="telephone"
+                value={user.telephone}
+                type="text"
+                onChange={handleChange}
+                placeholder="Telephone"
+              />
+            </label>
+            <label className="flex">
+              <span className="w-[8rem]">Mot de passe</span>
+              <input
+                className="inputText"
+                name="password"
+                value={user.password}
+                type="password"
+                onChange={handleChange}
+                placeholder="Password"
+              />
+            </label>
+            <div className="flex justify-end gap-2">
+              <Link className="buttonSecondary" to="/users">
+                ANNULER
+              </Link>
+              <button className="buttonPrimary" type="submit">
+                ENREGISTRER
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

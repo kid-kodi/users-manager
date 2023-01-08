@@ -7,3 +7,5 @@ export { default as DashboardPage } from "./main/DashboardPage";
 export { default as UserListPage } from "./users/UserListPage";
 export { default as UserEditPage } from "./users/UserEditPage";
 export { default as UserProfilePage } from "./users/UserProfilePage";
+export { default as UserExportPage } from "./users/UserExportPage";
+export { default as UserImportPage } from "./users/UserImportPage";
