@@ -1,8 +1,8 @@
 import React from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { UsersIcon, ChartPieIcon } from "@heroicons/react/24/outline";
 
-export default function AppLayout() {
+export default function AppLayout({ children }) {
   return (
     <div className="h-[100vh] w-full bg-gray-100">
       <div className="flex h-full">
@@ -14,7 +14,7 @@ export default function AppLayout() {
             <ul>
               <li className="my-[0.25rem]">
                 <NavLink
-                  to=""
+                  to="/"
                   className={({ isActive, isPending }) =>
                     isActive ? "active" : isPending ? "pending" : "link"
                   }
@@ -38,9 +38,7 @@ export default function AppLayout() {
             </ul>
           </nav>
         </div>
-        <div className="flex-1 h-full">
-          <Outlet />
-        </div>
+        <div className="flex-1 h-full">{children}</div>
       </div>
     </div>
   );

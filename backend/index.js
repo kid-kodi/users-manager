@@ -8,6 +8,7 @@ const port = 5000;
 
 const errorHandler = require("./helpers/errorHandler");
 
+const auth = require("./routes/auth");
 const users = require("./routes/users");
 
 const requestTime = function (req, res, next) {
@@ -38,8 +39,8 @@ app.use(
 );
 app.use(bodyParser.json());
 
-// app.use("/auth", auth);
-app.use("/users", users);
+app.use("/api/auth", auth);
+app.use("/api/users", users);
 
 // global error handler
 app.use(errorHandler);

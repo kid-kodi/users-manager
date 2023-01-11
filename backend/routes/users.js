@@ -51,7 +51,6 @@ router.get("/search", async (req, res, next) => {
 
     res.send({ users, page, pages });
   } catch (error) {
-    console.log(error);
     next(error);
   }
 });
@@ -121,8 +120,9 @@ router.put("/:userId", async (req, res, next) => {
 // RESPONSE : STATUS - 201
 // RESPONSE ERROR
 // RESPONSE : STATUS - 401
-router.delete("/more", async (req, res, next) => {
+router.post("/more", async (req, res, next) => {
   try {
+    console.log(req.body);
     const response = await User.deleteMany({ _id: { $in: req.body.ids } });
     res.status(201).json(response);
   } catch (error) {
