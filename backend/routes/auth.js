@@ -2,35 +2,73 @@ const User = require("../models/User");
 const auth = require("../middleware/auth");
 const router = require("express").Router();
 const Utility = require("../helpers/utility");
+const ErrorHanlder = require("../helpers/errorHandler");
+const sendMail = require("../helpers/email");
+const CatchAsyncError = require("../helpers/CatchAsyncError");
 
 // User sign-up
 router.post("/register", async (req, res, next) => {
   try {
+    const isEmailExist = await User.findOne({ email: req.body.email });
+    if (isEmailExist) {
+      return next(new ErrorHanlder("Cette adresse exist déjà", 400));
+    }
+
     const user = new User(req.body);
-    user.verificationToken = Utility.randomTokenString();
-    await user.save();
+    const activation = Utility.generateActivationToken(user);
+    let data = { user, activationCode: activation.activationCode };
+    await sendMail({
+      to: user.email,
+      subject: "Activation du compte invoice92.",
+      template: "activation-mail.ejs",
+      data,
+    });
     // await Email.sendVerificationEmail(user, req.get("origin"));
-    res.status(201).send({ user });
+    res.status(201).json({
+      success: true,
+      message: `Please check your mail : ${user.email}, to activate your account`,
+      activationToken: activation.token,
+    });
   } catch (error) {
-    next(error);
+    next(new ErrorHanlder(error.message, 400));
   }
 });
 
-// User verify email
-router.post("/verify-email", async (req, res, next) => {
-  try {
-    const user = await User.findOne({ verificationToken: req.body.token });
-    if (!user) {
-      res.status(201).send({ error: true, message: "" });
+// ACTIVATE ACCOUNT
+router.post(
+  "/activation",
+  CatchAsyncError(async (req, res, next) => {
+    const { activation_token, activation_code } = req.body;
+    const token = Utility.verifyActivationToken(activation_token);
+
+    if (token.activationCode !== activation_code) {
+      return next(new ErrorHanlder("Activation code invalide!", 400));
     }
-    user.verified = Date.now();
-    user.verificationToken = undefined;
+
+    const isEmailExist = await User.findOne({ email: token.email });
+    if (isEmailExist) {
+      return next(new ErrorHanlder("Cette adresse exist déjà", 400));
+    }
+
+    const { email, password } = token;
+
+    let user = new User({ email, password });
     await user.save();
-    res.status(201).send({ error: false, message: "" });
-  } catch (error) {
-    next(error);
-  }
-});
+
+    const access_token = user.signAccessToken();
+
+    res.status(200).json({
+      success: true,
+      user,
+      token: access_token,
+    });
+
+    try {
+    } catch (error) {
+      next(new ErrorHanlder(error.message, 400));
+    }
+  })
+);
 
 //User login
 router.post("/login", async (req, res, next) => {
@@ -39,8 +77,12 @@ router.post("/login", async (req, res, next) => {
       req.body.email,
       req.body.password
     );
-    const token = await user.generateAuthToken();
-    res.status(201).send(token);
+    const access_token = await user.signAccessToken();
+    res.status(200).json({
+      success: true,
+      user,
+      token: access_token,
+    });
   } catch (error) {
     next(error);
   }
@@ -49,69 +91,133 @@ router.post("/login", async (req, res, next) => {
 // User logout
 router.post("/logout", auth, async (req, res, next) => {
   try {
-    let tokenIndex = req.user.tokens.findIndex((obj) => obj.token == req.token);
-    // Here we keep the old token to be used as EasyLogin authenticator
-    req.user.tokens[tokenIndex].status = "trashed";
-    req.user.tokens[tokenIndex].easy_login_count = 0;
-
-    await req.user.save();
-    res.send();
+    res.status(200).json({ success: true, message: "Déconnexion successful" });
   } catch (e) {
     next(error);
   }
 });
 
-// get me
-router.get("/me", auth, async (req, res, next) => {
-  try {
-    console.log("OK");
-    res.send(req.user);
-  } catch (e) {
-    next(error);
-  }
-});
+// Get user's profile
+router.get(
+  "/me",
+  auth,
+  CatchAsyncError(async (req, res, next) => {
+    try {
+      const user = await User.findById(req.user.id);
+      res.status(200).json({ success: true, user });
+    } catch (error) {
+      return next(new ErrorHanlder(error.message, 400));
+    }
+  })
+);
 
-// User forgot password
-router.post("/forgot-password", async (req, res, next) => {
-  try {
-    const user = await User.findOne({ email: req.body.email });
-    if (!user) return;
+// Update user's profile
+router.put(
+  "/me/update",
+  auth,
+  CatchAsyncError(async (req, res, next) => {
+    try {
+      const user = await User.findByIdAndUpdate(req.user.id, req.body, {
+        new: true,
+      });
 
-    user.resetToken = {
-      token: Utility.randomTokenString(),
-      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    };
-    await user.save();
-    await Email.sendPasswordResetEmail(user, req.get("origin"));
-    res.status(201).send({
-      message:
-        "Veuillez vérifier votre adresse électronique pour les instructions de réinitialisation du mot de passe",
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+      res.status(200).json({ success: true, user });
+    } catch (error) {
+      return next(new ErrorHanlder(error.message, 400));
+    }
+  })
+);
 
-// User reset password
-router.post("/reset-password", async (req, res, next) => {
-  try {
-    const user = await User.findOne({
-      "resetToken.token": req.body.token,
-      "resetToken.expires": { $gt: Date.now() },
-    });
-    if (!user) throw new Error("Jeton invalide");
+// FORGOT PASSWORD
+router.post(
+  "/forgot-password",
+  CatchAsyncError(async (req, res, next) => {
+    try {
+      const user = await User.findOne({ email: req.body.email });
+      if (!user) {
+        return next(new ErrorHanlder("aucun utilisateur trouvé", 400));
+      }
 
-    // update password and remove reset token
-    user.password = req.body.password;
-    user.resetToken = undefined;
-    await user.save();
-    res.status(201).send({
-      message:
-        "Réinitialisation du mot de passe réussie, vous pouvez maintenant vous connecter",
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+      user.resetToken = {
+        token: Math.floor(1000 + Math.random() * 9000).toString(),
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      };
+      await user.save();
+
+      await sendMail({
+        to: user.email,
+        subject: "Changer de mot de passe invoice92.",
+        template: "password-reset-mail.ejs",
+        data: { user },
+      });
+
+      res.status(200).send({
+        success: true,
+        message:
+          "Veuillez vérifier votre adresse électronique pour les instructions de réinitialisation du mot de passe",
+      });
+    } catch (error) {
+      return next(new ErrorHanlder(error.message, 400));
+    }
+  })
+);
+
+// VERIFY ACCOUNT
+router.post(
+  "/verify-account",
+  CatchAsyncError(async (req, res, next) => {
+    try {
+      const user = await User.findOne({
+        "resetToken.token": req.body.activation_code,
+        "resetToken.expires": { $gt: Date.now() },
+      });
+
+      if (!user) {
+        return next(new ErrorHanlder("aucun utilisateur trouvé", 400));
+      }
+
+      // update password and remove reset token
+      // user.password = req.body.password;
+      // user.resetToken = undefined;
+      await user.save();
+      res.status(200).send({
+        success: true,
+        token: user.resetToken.token,
+        message:
+          "Réinitialisation du mot de passe réussie, vous pouvez maintenant vous connecter",
+      });
+    } catch (error) {
+      return next(new ErrorHanlder(error.message, 400));
+    }
+  })
+);
+// RESET PASSWORD
+router.post(
+  "/reset-password",
+  CatchAsyncError(async (req, res, next) => {
+    try {
+      const user = await User.findOne({
+        "resetToken.token": req.body.token,
+        "resetToken.expires": { $gt: Date.now() },
+      });
+
+      if (!user) {
+        return next(new ErrorHanlder("aucun utilisateur trouvé", 400));
+      }
+
+      // update password and remove reset token
+      user.password = req.body.password;
+      user.resetToken = undefined;
+      await user.save();
+      res.status(200).send({
+        success: true,
+        message:
+          "Réinitialisation du mot de passe réussie, vous pouvez maintenant vous connecter",
+      });
+    } catch (error) {
+      return next(new ErrorHanlder(error.message, 400));
+    }
+  })
+);
 
 module.exports = router;

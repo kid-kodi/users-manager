@@ -2,11 +2,13 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const dotenv = require("dotenv");
 
+dotenv.config();
 const app = express();
 const port = 5000;
 
-const errorHandler = require("./helpers/errorHandler");
+const errorHandler = require("./helpers/error");
 
 const auth = require("./routes/auth");
 const users = require("./routes/users");
@@ -22,7 +24,7 @@ app.use("/", express.static(__dirname + "/assets"));
 main().catch((err) => console.log(err));
 
 async function main() {
-  await mongoose.connect("mongodb://127.0.0.1:27017/sand");
+  await mongoose.connect("mongodb://127.0.0.1:27017/base");
 }
 
 const corsOptions = {

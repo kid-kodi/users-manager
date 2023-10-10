@@ -16,8 +16,8 @@ const getTime = () => {
 module.exports = {
   // getRefreshToken,
   hash,
-  // generateJwtToken,
-  // generateRefreshToken,
+  generateActivationToken,
+  verifyActivationToken,
   randomTokenString,
   setTokenCookie,
   padNumber,
@@ -44,18 +44,25 @@ function hash(password) {
   return bcrypt.hashSync(password, 10);
 }
 
-// function generateJwtToken(user) {
-//   return jwt.sign(
-//     {
-//       sub: user.id,
-//       id: user.id,
-//       role: user.role,
-//       company: user.company,
-//     },
-//     process.env.SECRET_KEY,
-//     { expiresIn: "30m" }
-//   );
-// }
+function verifyActivationToken(activationToken) {
+  let verifyToken = jwt.verify(activationToken, process.env.SECRET_KEY);
+
+  return verifyToken;
+}
+
+function generateActivationToken(user) {
+  const activationCode = Math.floor(1000 + Math.random() * 9000).toString();
+  const token = jwt.sign(
+    {
+      email: user.email,
+      password: user.password,
+      activationCode,
+    },
+    process.env.SECRET_KEY,
+    { expiresIn: "5m" }
+  );
+  return { activationCode, token };
+}
 
 // function generateRefreshToken(user, ipAddress) {
 //   // create a refresh token that expires in 7 days

@@ -19,6 +19,9 @@ import {
   UserImportPage,
   UserExportPage,
 } from "../pages";
+import ActivationPage from "../pages/auth/ActivationPage";
+import UpdateProfilePage from "../pages/auth/UpdateProfilePage";
+import VerifyAccountPage from "../pages/auth/VerifyAccountPage";
 
 export default function App() {
   return (
@@ -36,11 +39,25 @@ export default function App() {
                 </PublicRoute>
               }
             />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route
-              path="/reset-password/:token"
-              element={<ResetPasswordPage />}
+              path="/activation"
+              element={
+                <PublicRoute>
+                  <ActivationPage />
+                </PublicRoute>
+              }
             />
+            <Route
+              path="/update-profile"
+              element={
+                <PublicRoute>
+                  <UpdateProfilePage />
+                </PublicRoute>
+              }
+            />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/verify-account" element={<VerifyAccountPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route
               path="/register"
               element={

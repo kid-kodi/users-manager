@@ -11,11 +11,11 @@ export default class ApiClient {
   }
 
   isAuthenticated() {
-    return localStorage.getItem("user") !== null;
+    return localStorage.getItem("token") !== null;
   }
 
   authToken() {
-    return localStorage.getItem("user");
+    return localStorage.getItem("token");
   }
 
   authHeader() {

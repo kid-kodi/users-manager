@@ -7,7 +7,7 @@ const excelToJson = require("convert-excel-to-json");
 // CREATE A USER
 // URL : http://localhost:5000/users
 // METHOD : POST
-// REQUEST : { firstName, lastName, email, telephone, password }
+// REQUEST : { email, telephone, password }
 // RESPONSE SUCCESS
 // RESPONSE : STATUS - 201
 // RESPONSE ERROR

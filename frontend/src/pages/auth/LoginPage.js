@@ -25,10 +25,10 @@ export default function LoginPage() {
     validationSchema: SigninSchema,
     onSubmit: async (values) => {
       const response = await api.post(`/api/auth/login`, values);
-      if (!response.error) {
-        localStorage.setItem("user", response);
+      if (response.success) {
+        localStorage.setItem("token", response.token);
         flash(`you login successfully`, `success`);
-        setUser(response);
+        setUser(response.user);
         navigate("/");
       } else {
         flash(`${response.error.message}`, `danger`);
@@ -84,9 +84,17 @@ export default function LoginPage() {
                 className="px-6 py-4 text-xl bg-blue-500 text-white rounded-lg"
                 type="submit"
               >
-                Connexion
+                {formik.isSubmitting ? "...." : "Connectez-vous"}
               </button>
             </form>
+            <div>
+              <a href="/register">Pas de compte ? Enregistez-vous </a>
+            </div>
+            <div>
+              <a href="/forgot-password">
+                Vous avez oublié votre password ? Réinitialiser le
+              </a>
+            </div>
           </div>
         </div>
       </div>

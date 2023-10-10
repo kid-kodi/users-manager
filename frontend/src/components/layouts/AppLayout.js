@@ -1,8 +1,21 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { UsersIcon, ChartPieIcon } from "@heroicons/react/24/outline";
+import {
+  UsersIcon,
+  ChartPieIcon,
+  ArrowLeftOnRectangleIcon,
+} from "@heroicons/react/24/outline";
+import { useUser } from "../../contexts/UserProvider";
 
 export default function AppLayout({ children }) {
+  const { logout } = useUser();
+  const handleLogout = () => {
+    const isConfirmed = window.confirm("Confirmez votre deconnection");
+    if (isConfirmed) {
+      logout();
+    }
+  };
+
   return (
     <div className="h-[100vh] w-full bg-gray-100">
       <div className="flex h-full">
@@ -37,6 +50,12 @@ export default function AppLayout({ children }) {
               </li>
             </ul>
           </nav>
+          <div className="p-[1rem] my-[0.25rem]">
+            <button className="link" onClick={() => handleLogout()}>
+              <ArrowLeftOnRectangleIcon className="w-6 h-6" />
+              <span>Déconnexion</span>
+            </button>
+          </div>
         </div>
         <div className="flex-1 h-full">{children}</div>
       </div>

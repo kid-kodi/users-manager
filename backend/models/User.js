@@ -6,11 +6,9 @@ const userSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-      required: true,
     },
     lastName: {
       type: String,
-      required: true,
     },
     code: {
       type: String,
@@ -118,14 +116,10 @@ userSchema.statics.findByIdAndPass = async (_id, password) => {
   return user;
 };
 
-userSchema.methods.generateAuthToken = async function () {
-  const user = this;
-  const token = jwt.sign({ _id: user._id.toString() }, config.jwtSecret);
-
-  user.tokens = user.tokens.concat({ token, status: "active" });
-  await user.save();
-
-  return token;
+userSchema.methods.signAccessToken = function () {
+  return jwt.sign({ _id: this._id }, process.env.JWT_SECRET, {
+    expiresIn: "3d",
+  });
 };
 
 userSchema.methods.changePassword = async function (data) {
