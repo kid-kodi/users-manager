@@ -22,6 +22,7 @@ import {
 import ActivationPage from "../pages/auth/ActivationPage";
 import UpdateProfilePage from "../pages/auth/UpdateProfilePage";
 import VerifyAccountPage from "../pages/auth/VerifyAccountPage";
+import CustomerEditPage from "../pages/customers/CustomerEditPage";
 
 export default function App() {
   return (
@@ -84,6 +85,20 @@ export default function App() {
                       <Route
                         path="edit/:userId"
                         element={<UserEditPage />}
+                      ></Route>
+                    </Route>
+                    <Route path="customers">
+                      <Route path="" element={<UserListPage />}></Route>
+                      <Route path="import" element={<UserImportPage />}></Route>
+                      <Route path="export" element={<UserExportPage />}></Route>
+                      <Route
+                        path=":userId"
+                        element={<UserProfilePage />}
+                      ></Route>
+                      <Route path="new" element={<CustomerEditPage />}></Route>
+                      <Route
+                        path="edit/:userId"
+                        element={<CustomerEditPage />}
                       ></Route>
                     </Route>
                     <Route path="*" element={<Navigate to="/" />} />
